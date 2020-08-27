@@ -39,3 +39,28 @@ REDIRECT_TO_COURSEWARE_MICROFRONTEND = ExperimentWaffleFlag(
 # .. toggle_tickets: TNL-6982
 # .. toggle_status: supported
 COURSEWARE_MICROFRONTEND_COURSE_TEAM_PREVIEW = CourseWaffleFlag(WAFFLE_FLAG_NAMESPACE, 'microfrontend_course_team_preview')
+
+
+# Waffle flag to enable the course completion page in the learning MFE.
+#
+# .. toggle_name: courseware.courseware_mfe_course_completion
+# .. toggle_implementation: CourseWaffleFlag
+# .. toggle_default: False
+# .. toggle_description: Supports staged rollout of the new micro-frontend-based implementation of the course completion page.
+# .. toggle_category: micro-frontend
+# .. toggle_use_cases: incremental_release, open_edx
+# .. toggle_creation_date: 2020-09-09
+# .. toggle_expiration_date: 2020-12-31
+# .. toggle_warnings: Also set settings.LEARNING_MICROFRONTEND_URL and ENABLE_COURSEWARE_MICROFRONTEND.
+# .. toggle_tickets: AA-196
+# .. toggle_status: supported
+COURSEWARE_MICROFRONTEND_COURSE_COMPLETION = CourseWaffleFlag(
+    WAFFLE_FLAG_NAMESPACE, 'courseware_mfe_course_completion'
+)
+
+
+def course_completion_is_active(course_key):
+    return (
+        REDIRECT_TO_COURSEWARE_MICROFRONTEND.is_enabled(course_key) and
+        COURSEWARE_MICROFRONTEND_COURSE_COMPLETION.is_enabled(course_key)
+    )
