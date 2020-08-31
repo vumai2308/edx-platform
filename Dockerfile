@@ -4,6 +4,8 @@ FROM ubuntu:xenial as base
 
 # Install system requirements
 RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    apt-add-repository -y ppa:deadsnakes/ppa && apt-get update && \
     # Global requirements
     DEBIAN_FRONTEND=noninteractive apt-get install --yes \
     build-essential \
@@ -20,7 +22,6 @@ RUN apt-get update && \
     libxml2-dev \
     libxmlsec1-dev \
     libxslt1-dev \
-    software-properties-common \
     swig \
     # openedx requirements
     gettext \
@@ -39,10 +40,11 @@ RUN apt-get update && \
     libxslt1-dev \
     ntp \
     pkg-config \
-    python3-dev \
     python3-pip \
-    python3.5 \
-    && rm -rf /var/lib/apt/lists/*
+    python3.8-dev \
+    python3.8-distutils \
+    python3.8-venv -qy &&
+    rm -rf /var/lib/apt/lists/*
 
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
@@ -62,14 +64,14 @@ ENV SETTINGS production
 RUN mkdir -p /edx/etc/
 
 # Install Python requirements
-RUN pip install pip==20.0.2
+RUN python3.8 -m pip install pip==20.0.2
 COPY setup.py setup.py
 COPY common common
 COPY openedx openedx
 COPY lms lms
 COPY cms cms
 COPY requirements/edx/base.txt requirements/edx/base.txt
-RUN pip install -r requirements/edx/base.txt
+RUN python3.8 -m pip install -r requirements/edx/base.txt
 
 # Copy just JS requirements and install them.
 COPY package.json package.json
@@ -94,7 +96,7 @@ EXPOSE 8000
 CMD gunicorn -c /edx/app/edxapp/edx-platform/lms/docker_lms_gunicorn.py --name lms --bind=0.0.0.0:8000 --max-requests=1000 --access-logfile - lms.wsgi:application
 
 FROM lms as lms-newrelic
-RUN pip install newrelic
+RUN python3.8 -m pip install newrelic
 CMD newrelic-admin run-program gunicorn -c /edx/app/edxapp/edx-platform/lms/docker_lms_gunicorn.py --name lms --bind=0.0.0.0:8000 --max-requests=1000 --access-logfile - lms.wsgi:application
 
 FROM lms as lms-devstack
@@ -113,7 +115,7 @@ EXPOSE 8010
 CMD gunicorn -c /edx/app/edxapp/edx-platform/cms/docker_cms_gunicorn.py --name cms --bind=0.0.0.0:8010 --max-requests=1000 --access-logfile - cms.wsgi:application
 
 FROM studio as studio-newrelic
-RUN pip install newrelic
+RUN python3.8 -m pip install newrelic
 CMD newrelic-admin run-program gunicorn -c /edx/app/edxapp/edx-platform/cms/docker_cms_gunicorn.py --name cms --bind=0.0.0.0:8010 --max-requests=1000 --access-logfile - cms.wsgi:application
 
 FROM studio as studio-devstack
