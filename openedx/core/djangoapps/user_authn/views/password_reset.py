@@ -118,7 +118,9 @@ def send_password_reset_success_email_to_user(user, request):
     """
     message_context, user_language_preference = get_ace_email_params(user)
     lms_root_url = configuration_helpers.get_value('LMS_ROOT_URL', settings.LMS_ROOT_URL)
-    message_context.update({'login_link': '{}/login'.format(lms_root_url)})
+    message_context.update(
+        {'login_link': '{}/login'.format(lms_root_url), 'request': request, }
+    )
 
     msg = PasswordResetSuccess(context=message_context).personalize(
         recipient=Recipient(user.username, user.email),
