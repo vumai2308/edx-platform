@@ -479,6 +479,7 @@ class ResetPasswordTests(EventTestMixin, CacheIsolationTestCase):
         process_request(confirm_request)
         confirm_request.session[INTERNAL_RESET_SESSION_TOKEN] = self.token
         confirm_request.user = self.user
+        confirm_request.site = Mock(domain='example.com')
         __ = PasswordResetConfirmWrapper.as_view()(confirm_request, uidb36=self.uidb36, token=self.token)
 
         user = User.objects.get(pk=self.user.pk)
